@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LEDBallPlugin", "BakkesPluginTemplate.vcxproj", "{967E3E26-5E62-467E-B7F5-BEE0FF28414A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LEDBallPlugin", "LEDBallPlugin.vcxproj", "{967E3E26-5E62-467E-B7F5-BEE0FF28414A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
