@@ -1,8 +1,17 @@
+/*
+I did not write this file. I found it here: https://playground.arduino.cc/Interfacing/CPPWindows
+I did modify it for use within the context of a BakkesMod Plugin (adding a parent plugin for console logging support, etc.)
+*/
+
 #include "pch.h"
 #include "SerialClass.h"
 
 Serial::Serial(LPCWSTR portName, BakkesMod::Plugin::BakkesModPlugin* parent)
 {
+    // Couple of dummy inits
+    errors = 0;
+    memset(&status, 0, sizeof(COMSTAT));
+
     //We're not yet connected
     this->connected = false;
 

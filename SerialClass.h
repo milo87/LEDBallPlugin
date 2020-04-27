@@ -1,3 +1,8 @@
+/*
+I did not write this file. I found it here: https://playground.arduino.cc/Interfacing/CPPWindows
+I did modify it for use within the context of a BakkesMod Plugin (adding a parent plugin for console logging support, etc.)
+*/
+
 #pragma once
 
 constexpr auto ARDUINO_WAIT_TIME = 2000;
