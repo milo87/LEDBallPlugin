@@ -1,6 +1,6 @@
 /*
-I did not write this file. I found it here: https://playground.arduino.cc/Interfacing/CPPWindows
-I did modify it for use within the context of a BakkesMod Plugin (adding a parent plugin for console logging support, etc.)
+I did not write this file, but I have modified it. I found the original here: https://playground.arduino.cc/Interfacing/CPPWindows
+I modified it for use within the context of a BakkesMod Plugin (adding a parent plugin for console logging support, etc.)
 */
 
 #include "pch.h"
@@ -82,6 +82,10 @@ Serial::Serial(LPCWSTR portName, BakkesMod::Plugin::BakkesModPlugin* parent)
 
 Serial::~Serial()
 {
+    Disconnect();
+}
+
+void Serial::Disconnect() {
     //Check if we are connected before trying to disconnect
     if (this->connected)
     {

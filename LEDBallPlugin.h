@@ -20,8 +20,12 @@ private:
 
 	void StartLoop();
 
+	void DoGoalFlash();
+
+	bool isPulsing;
+
 	void UpdateMatchState();
 	void UpdateState(ServerWrapper wrapper);
 	ServerWrapper GetCurrentGameType();
-	void UpdateArduino(const char* data, int len_data);
+	void UpdateArduino(string data);
 };

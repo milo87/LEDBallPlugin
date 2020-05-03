@@ -5,18 +5,25 @@
 
 BAKKESMOD_PLUGIN(LEDBallPlugin, "LEDBallPlugin", plugin_version, PLUGINTYPE_THREADED)
 
-
 void LEDBallPlugin::onLoad() {
 	cvarManager->log("Attempting to connect to COM port...");
 	this->SP = new Serial(L"COM4", this);
+
 	if (SP->IsConnected()) {
 		cvarManager->log("Connected!");
+		this->isPulsing = false;
+		this->gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.TriggerGoalScoreEvent", bind(&LEDBallPlugin::DoGoalFlash, this));
 		this->StartLoop();
 	}
 }
 
 void LEDBallPlugin::onUnload() {
 	this->SP->~Serial();
+}
+
+void LEDBallPlugin::DoGoalFlash() {
+	cvarManager->log("GOAL!!!!!!!!!");
+	this->UpdateArduino("FLASH");
 }
 
 void LEDBallPlugin::StartLoop() {
@@ -28,8 +35,17 @@ void LEDBallPlugin::UpdateMatchState()
 {
 	ServerWrapper wrapper = GetCurrentGameType();
 
-	if (!wrapper.IsNull())
+	if (!wrapper.IsNull()) {
+		this->isPulsing = false;
 		this->UpdateState(wrapper);
+	}
+	else {
+		if (!this->isPulsing) {
+			cvarManager->log("Not in a game, defaulting to PULSE");
+			UpdateArduino("PULSE");
+			isPulsing = true;
+		}
+	}
 
 	return;
 }
@@ -52,11 +68,11 @@ void LEDBallPlugin::UpdateState(ServerWrapper wrapper)
 						uint8_t G = (uint8_t)(Utils::Lerp(0, 255, fc.G) * 0.6);
 						uint8_t B = (uint8_t)(Utils::Lerp(0, 255, fc.B) * 0.1);
 
-						string data = to_string(R) + "," + to_string(G) + "," + to_string(B) + "\n";
+					
+						string data = "TEAM " + to_string(R) + "," + to_string(G) + "," + to_string(B) + "N";
+						cvarManager->log(data);
 
-						cvarManager->log("RGB: " + data);
-
-						UpdateArduino(data.c_str(), data.length());
+						this->UpdateArduino(data);
 					}
 				}
 			}
@@ -77,8 +93,9 @@ ServerWrapper LEDBallPlugin::GetCurrentGameType()
 	}
 }
 
-void LEDBallPlugin::UpdateArduino(const char* data, int len_data) {
+void LEDBallPlugin::UpdateArduino(string data) {
+	const char* data_array = data.c_str();
 	if (SP->IsConnected()) {
-		SP->WriteData(data, len_data);
+		SP->WriteData(data_array, data.length());
 	}
 }
