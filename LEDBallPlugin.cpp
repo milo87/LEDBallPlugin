@@ -23,7 +23,7 @@ void LEDBallPlugin::onUnload() {
 
 void LEDBallPlugin::DoGoalFlash() {
 	cvarManager->log("GOAL!!!!!!!!!");
-	this->UpdateArduino("FLASH");
+	this->UpdateArduino("GOAL");
 }
 
 void LEDBallPlugin::StartLoop() {
@@ -64,12 +64,12 @@ void LEDBallPlugin::UpdateState(ServerWrapper wrapper)
 					if (!teams.Get(teamIndex).IsNull()) {
 						LinearColor fc = teams.Get(teamIndex).GetFontColor();
 
-						uint8_t R = (uint8_t)(Utils::Lerp(0, 255, fc.R) * 0.3);
-						uint8_t G = (uint8_t)(Utils::Lerp(0, 255, fc.G) * 0.6);
-						uint8_t B = (uint8_t)(Utils::Lerp(0, 255, fc.B) * 0.1);
+						uint8_t R = (uint8_t)(Utils::Lerp(0, 255, fc.R) * 0.5);
+						uint8_t G = (uint8_t)(Utils::Lerp(0, 255, fc.G));
+						uint8_t B = (uint8_t)(Utils::Lerp(0, 255, fc.B) * 0.16);
 
 					
-						string data = "TEAM " + to_string(R) + "," + to_string(G) + "," + to_string(B) + "N";
+						string data = "TEAM;" + to_string(R) + "," + to_string(G) + "," + to_string(B) + ";";
 						cvarManager->log(data);
 
 						this->UpdateArduino(data);
