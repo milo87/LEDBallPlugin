@@ -6,16 +6,24 @@ I modified it for use within the context of a BakkesMod Plugin (adding a parent 
 #include "pch.h"
 #include "SerialClass.h"
 
-Serial::Serial(LPCWSTR portName, BakkesMod::Plugin::BakkesModPlugin* parent)
+Serial::Serial(BakkesMod::Plugin::BakkesModPlugin* parent)
 {
     // Couple of dummy inits
     errors = 0;
     memset(&status, 0, sizeof(COMSTAT));
+    this->parent = parent;
+}
 
+Serial::~Serial()
+{
+    Disconnect();
+}
+
+bool Serial::Connect(LPCWSTR portName) {
     //We're not yet connected
     this->connected = false;
 
-    //Try to connect to the given port throuh CreateFile
+    //Try to connect to the given port through CreateFile
     this->hSerial = CreateFile(portName,
         GENERIC_READ | GENERIC_WRITE,
         0,
@@ -36,8 +44,10 @@ Serial::Serial(LPCWSTR portName, BakkesMod::Plugin::BakkesModPlugin* parent)
         }
         else
         {
-            parent->cvarManager->log("ERROR!!!");
+            parent->cvarManager->log("ERROR: " + to_string(GetLastError()));
         }
+
+        return false;
     }
     else
     {
@@ -78,11 +88,7 @@ Serial::Serial(LPCWSTR portName, BakkesMod::Plugin::BakkesModPlugin* parent)
         }
     }
 
-}
-
-Serial::~Serial()
-{
-    Disconnect();
+    return this->connected;
 }
 
 void Serial::Disconnect() {
@@ -96,8 +102,9 @@ void Serial::Disconnect() {
     }
 }
 
-int Serial::ReadData(char* buffer, unsigned int nbChar)
+char* Serial::ReadData(unsigned int nbChar)
 {
+    char* buffer;
     //Number of bytes we'll have read
     DWORD bytesRead;
     //Number of bytes we'll really ask to read
@@ -122,9 +129,9 @@ int Serial::ReadData(char* buffer, unsigned int nbChar)
         }
 
         //Try to read the require number of chars, and return the number of read bytes on success
-        if (ReadFile(this->hSerial, buffer, toRead, &bytesRead, NULL))
+        if (ReadFile(this->hSerial, &buffer, toRead, &bytesRead, NULL))
         {
-            return bytesRead;
+            return buffer;
         }
 
     }

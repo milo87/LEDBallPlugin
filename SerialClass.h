@@ -11,6 +11,8 @@ constexpr auto ARDUINO_WAIT_TIME = 2000;
 class Serial
 {
 private:
+    // Parent plugin for logging
+    BakkesMod::Plugin::BakkesModPlugin* parent;
     //Serial comm handler
     HANDLE hSerial;
     //Connection status
@@ -22,7 +24,8 @@ private:
 
 public:
     //Initialize Serial communication with the given COM port
-    Serial(const LPCWSTR portName, BakkesMod::Plugin::BakkesModPlugin* parent);
+    Serial(BakkesMod::Plugin::BakkesModPlugin* parent);
+    bool Connect(const LPCWSTR portName);
     //Close the connection
     ~Serial();
     void Disconnect();
@@ -30,7 +33,7 @@ public:
     //maximum number of bytes available, it will return only the
     //bytes available. The function return -1 when nothing could
     //be read, the number of bytes actually read.
-    int ReadData(char* buffer, unsigned int nbChar);
+    char* ReadData(unsigned int nbChar);
     //Writes data from a buffer through the Serial connection
     //return true on success.
     bool WriteData(const char* buffer, unsigned int nbChar);

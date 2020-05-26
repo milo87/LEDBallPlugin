@@ -18,14 +18,21 @@ private:
 	unsigned char G;
 	unsigned char B;
 
+	const int goal_flash_cycles = 10;
+	const int goal_flash_on_time = 50;
+	const int goal_flash_off_time = 50;
+
+	bool stateLocked = false;
+
 	void StartLoop();
 
-	void DoGoalFlash();
+	void DoGoalFlash(int numCycles = 10, int onTime = 50, int offTime = 50);
 
 	bool isPulsing;
 
 	void UpdateMatchState();
 	void UpdateState(ServerWrapper wrapper);
 	ServerWrapper GetCurrentGameType();
-	void UpdateArduino(string data);
+	void UpdateArduino(string data, bool locking=false);
+	void UnlockState();
 };

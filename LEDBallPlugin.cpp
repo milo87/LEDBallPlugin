@@ -6,13 +6,36 @@
 BAKKESMOD_PLUGIN(LEDBallPlugin, "LEDBallPlugin", plugin_version, PLUGINTYPE_THREADED)
 
 void LEDBallPlugin::onLoad() {
-	cvarManager->log("Attempting to connect to COM port...");
-	this->SP = new Serial(L"COM4", this);
+	this->SP = new Serial(this);
+
+	int comNum = 2;
+	wchar_t comNumBuffer[5];
+
+	bool isConnected = false;
+
+	while (!isConnected) {
+		cvarManager->log("Attempting to connect to COM" + to_string(comNum));
+		wsprintfW(comNumBuffer, L"COM%d", comNum++);
+		if(this->SP->Connect(comNumBuffer)) {
+			isConnected = true;
+			break;
+		}
+;		if (comNum == 10) {
+			cvarManager->log("ERROR: Cannot connect");
+			break;
+		}
+	}
 
 	if (SP->IsConnected()) {
 		cvarManager->log("Connected!");
 		this->isPulsing = false;
-		this->gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.TriggerGoalScoreEvent", bind(&LEDBallPlugin::DoGoalFlash, this));
+		this->gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.TriggerGoalScoreEvent", 
+			bind(&LEDBallPlugin::DoGoalFlash, this, 
+				this->goal_flash_cycles,
+				this->goal_flash_on_time,
+				this->goal_flash_off_time
+			)
+		);
 		this->StartLoop();
 	}
 }
@@ -21,9 +44,10 @@ void LEDBallPlugin::onUnload() {
 	this->SP->~Serial();
 }
 
-void LEDBallPlugin::DoGoalFlash() {
+void LEDBallPlugin::DoGoalFlash(int numCycles, int onTime, int offTime) {
 	cvarManager->log("GOAL!!!!!!!!!");
-	this->UpdateArduino("GOAL");
+	this->UpdateArduino("GOAL;" + to_string(numCycles) + "," + to_string(onTime) + ";" + to_string(offTime) + ";", true);
+	this->gameWrapper->SetTimeout(std::bind(&LEDBallPlugin::UnlockState, this), (float)(numCycles * (onTime + offTime)) / 1000);
 }
 
 void LEDBallPlugin::StartLoop() {
@@ -37,7 +61,7 @@ void LEDBallPlugin::UpdateMatchState()
 
 	if (!wrapper.IsNull()) {
 		this->isPulsing = false;
-		this->UpdateState(wrapper);
+		UpdateState(wrapper);
 	}
 	else {
 		if (!this->isPulsing) {
@@ -64,15 +88,15 @@ void LEDBallPlugin::UpdateState(ServerWrapper wrapper)
 					if (!teams.Get(teamIndex).IsNull()) {
 						LinearColor fc = teams.Get(teamIndex).GetFontColor();
 
-						uint8_t R = (uint8_t)(Utils::Lerp(0, 255, fc.R) * 0.5);
+						uint8_t R = (uint8_t)(Utils::Lerp(0, 255, fc.R));
 						uint8_t G = (uint8_t)(Utils::Lerp(0, 255, fc.G));
-						uint8_t B = (uint8_t)(Utils::Lerp(0, 255, fc.B) * 0.16);
+						uint8_t B = (uint8_t)(Utils::Lerp(0, 255, fc.B));
 
 					
 						string data = "TEAM;" + to_string(R) + "," + to_string(G) + "," + to_string(B) + ";";
 						cvarManager->log(data);
 
-						this->UpdateArduino(data);
+						UpdateArduino(data);
 					}
 				}
 			}
@@ -93,9 +117,21 @@ ServerWrapper LEDBallPlugin::GetCurrentGameType()
 	}
 }
 
-void LEDBallPlugin::UpdateArduino(string data) {
+void LEDBallPlugin::UpdateArduino(string data, bool locking) {
 	const char* data_array = data.c_str();
-	if (SP->IsConnected()) {
-		SP->WriteData(data_array, data.length());
+
+	if (this->SP->IsConnected() && !this->stateLocked) {
+		cvarManager->log(to_string(data.length()));
+		this->SP->WriteData(data_array, static_cast<unsigned int>(data.length()));
+	}
+
+	if (locking) {
+		this->stateLocked = true;
+	}
+}
+
+void LEDBallPlugin::UnlockState() {
+	if (this->stateLocked) {
+		this->stateLocked = false;
 	}
 }
