@@ -44,7 +44,7 @@ bool Serial::Connect(LPCWSTR portName) {
         }
         else
         {
-            parent->cvarManager->log("ERROR: " + to_string(GetLastError()));
+            parent->cvarManager->log("ERROR: " + std::to_string(GetLastError()));
         }
 
         return false;

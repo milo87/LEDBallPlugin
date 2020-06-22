@@ -14,7 +14,7 @@ void LEDBallPlugin::onLoad() {
 	bool isConnected = false;
 
 	while (!isConnected) {
-		cvarManager->log("Attempting to connect to COM" + to_string(comNum));
+		cvarManager->log("Attempting to connect to COM" + std::to_string(comNum));
 		wsprintfW(comNumBuffer, L"COM%d", comNum++);
 		if(this->SP->Connect(comNumBuffer)) {
 			isConnected = true;
@@ -29,11 +29,11 @@ void LEDBallPlugin::onLoad() {
 	if (SP->IsConnected()) {
 		cvarManager->log("Connected!");
 		this->isPulsing = false;
-		this->gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.TriggerGoalScoreEvent", 
-			bind(&LEDBallPlugin::DoGoalFlash, this, 
-				this->goal_flash_cycles,
-				this->goal_flash_on_time,
-				this->goal_flash_off_time
+		this->gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", 
+			std::bind(&LEDBallPlugin::DoGoalFlash, this, 
+				LEDBallPlugin::goal_flash_cycles,
+				LEDBallPlugin::goal_flash_on_time,
+				LEDBallPlugin::goal_flash_off_time
 			)
 		);
 		this->StartLoop();
@@ -45,8 +45,8 @@ void LEDBallPlugin::onUnload() {
 }
 
 void LEDBallPlugin::DoGoalFlash(int numCycles, int onTime, int offTime) {
-	cvarManager->log("GOAL!!!!!!!!!");
-	this->UpdateArduino("GOAL;" + to_string(numCycles) + "," + to_string(onTime) + ";" + to_string(offTime) + ";", true);
+	cvarManager->log("GOAL! " + std::to_string(numCycles) + "," + std::to_string(onTime) + ";" + std::to_string(offTime));
+	this->UpdateArduino("GOAL;" + std::to_string(numCycles) + "," + std::to_string(onTime) + ";" + std::to_string(offTime) + ";", true);
 	this->gameWrapper->SetTimeout(std::bind(&LEDBallPlugin::UnlockState, this), (float)(numCycles * (onTime + offTime)) / 1000);
 }
 
@@ -93,7 +93,7 @@ void LEDBallPlugin::UpdateState(ServerWrapper wrapper)
 						uint8_t B = (uint8_t)(Utils::Lerp(0, 255, fc.B));
 
 					
-						string data = "TEAM;" + to_string(R) + "," + to_string(G) + "," + to_string(B) + ";";
+						std::string data = "TEAM;" + std::to_string(R) + "," + std::to_string(G) + "," + std::to_string(B) + ";";
 						cvarManager->log(data);
 
 						UpdateArduino(data);
@@ -117,11 +117,11 @@ ServerWrapper LEDBallPlugin::GetCurrentGameType()
 	}
 }
 
-void LEDBallPlugin::UpdateArduino(string data, bool locking) {
+void LEDBallPlugin::UpdateArduino(std::string data, bool locking) {
 	const char* data_array = data.c_str();
 
 	if (this->SP->IsConnected() && !this->stateLocked) {
-		cvarManager->log(to_string(data.length()));
+		cvarManager->log(std::to_string(data.length()));
 		this->SP->WriteData(data_array, static_cast<unsigned int>(data.length()));
 	}
 
