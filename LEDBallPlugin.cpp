@@ -45,7 +45,7 @@ void LEDBallPlugin::onUnload() {
 }
 
 void LEDBallPlugin::DoGoalFlash(int numCycles, int onTime, int offTime) {
-	cvarManager->log("GOAL! " + std::to_string(numCycles) + "," + std::to_string(onTime) + ";" + std::to_string(offTime));
+	// cvarManager->log("GOAL! " + std::to_string(numCycles) + "," + std::to_string(onTime) + ";" + std::to_string(offTime));
 	this->UpdateArduino("GOAL;" + std::to_string(numCycles) + "," + std::to_string(onTime) + ";" + std::to_string(offTime) + ";", true);
 	this->gameWrapper->SetTimeout(std::bind(&LEDBallPlugin::UnlockState, this), (float)(numCycles * (onTime + offTime)) / 1000);
 }
@@ -65,7 +65,7 @@ void LEDBallPlugin::UpdateMatchState()
 	}
 	else {
 		if (!this->isPulsing) {
-			cvarManager->log("Not in a game, defaulting to PULSE");
+			// cvarManager->log("Not in a game, defaulting to PULSE");
 			UpdateArduino("PULSE");
 			isPulsing = true;
 		}
@@ -94,7 +94,7 @@ void LEDBallPlugin::UpdateState(ServerWrapper wrapper)
 
 					
 						std::string data = "TEAM;" + std::to_string(R) + "," + std::to_string(G) + "," + std::to_string(B) + ";";
-						cvarManager->log(data);
+						// cvarManager->log(data);
 
 						UpdateArduino(data);
 					}
@@ -121,7 +121,7 @@ void LEDBallPlugin::UpdateArduino(std::string data, bool locking) {
 	const char* data_array = data.c_str();
 
 	if (this->SP->IsConnected() && !this->stateLocked) {
-		cvarManager->log(std::to_string(data.length()));
+		// cvarManager->log(std::to_string(data.length()));
 		this->SP->WriteData(data_array, static_cast<unsigned int>(data.length()));
 	}
 
